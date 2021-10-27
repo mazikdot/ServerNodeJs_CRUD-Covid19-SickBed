@@ -185,7 +185,7 @@ app.post('/registers', (req, res) => {
         bcrypt.hash(user_passwords,12).then((hash_passwords) =>{
             dbCon.query('INSERT INTO tbusers(user_username,user_passwords,user_firstname,user_lastname,user_email,user_phone,prefix_id,sex_id,province_id,amphure_id,districts_id,roles_id)  VALUES(?, ?,?,?,?,?,?,?,?,?,?,1)', [user_username, hash_passwords,user_firstname,user_lastname,user_email,user_phone,prefix_id,sex_id,province_id,amphure_id,districts_id], (error, results, fields) => {
                 if (error){
-                    return res.send({ error: false, data: results, message: "โปรดลองอีกครั้งบัญชีนี้มีผู้ใช้แล้ว"})
+                    return res.send({ error: true, data: results, message: "โปรดลองอีกครั้งบัญชีนี้มีผู้ใช้แล้ว"})
                 }
                 else
                 {
@@ -206,23 +206,29 @@ app.post('/insert-sickbed', (req, res) => {
     let sick_amount = req.body.sick_amount;
     let sick_note = req.body.sick_note;
     let sit_id = req.body.sit_id;
+    let districts_id = req.body.districts_id;
+    let province_id = req.body.province_id;
+    let amphure_id = req.body.amphure_id;
+    let village = req.body.village;
    // session = req.session
     // session.user_username = req.body.sick_name
     // console.log(session.user_username)
    // console.log(session);
     // let hash_password = has(req.body.user_passwords);
     // validation
-    if(user_username === '' || sick_name === '' || sick_amount === '' || sick_note === '' || sit_id === ''){
-        return res.send({ error: true, message: "กรุณากรอกข้อมูลให้ครบถ้วน"});
+    if(user_username === '' || sick_name === '' || sick_amount === '' || sick_note === '' || sit_id === '' || districts_id === ''
+  || province_id === '' || amphure_id === ''  || village ===''
+    ){
+        return res.send({ error: true, status : false});
     }
     else {
-            dbCon.query('INSERT INTO tbsick_bed(sick_name,sick_amount,sick_note,sit_id,user_username)  VALUES(?,?,?,2,?)', [sick_name,sick_amount,sick_note,user_username], (error, results, fields) => {
-                if (error){
-                    return res.send({ error: false, data: results, message: "โปรดลองอีกครั้ง !!!"})
+            dbCon.query('INSERT INTO tbsick_bed(sick_name,sick_amount,sick_note,sit_id,user_username,districts_id,province_id,amphure_id,village)  VALUES(?,?,?,2,?,?,?,?,?)', [sick_name,sick_amount,sick_note,user_username,districts_id,province_id,amphure_id,village], (error, results, fields) => {
+                if (error) { 
+                    return res.send({ error: true, data: results, message: "โปรดลองอีกครั้ง"})
                 }
                 else
                 {
-                return res.send({ error: false, data: results, message: "บริจาคเตียงผู้ป่วยสำเร็จ"})
+                return res.send({ error: false, data: results, status: true})
                 }
             })
     }

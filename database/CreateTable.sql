@@ -130,3 +130,15 @@ CREATE TABLE IF NOT EXISTS tbsick_want(
 ALTER TABLE tbusers ADD COLUMN amphure_id int(4) NOT NULL;
 ALTER TABLE tbusers ADD COLUMN districts_id int(4) NOT NULL;
 ALTER TABLE tbsick_bed ADD COLUMN date_add timestamp NOT NULL;
+ALTER TABLE tbsick_bed ADD COLUMN province_id int(5)  NULL;
+ALTER TABLE tbsick_bed ADD COLUMN amphure_id int(5)  NULL;
+ALTER TABLE tbsick_bed ADD COLUMN districts_id int(5)  NULL;
+ALTER TABLE tbsick_bed ADD COLUMN village int(1)  NULL;
+
+
+ALTER TABLE tbsick_bed ADD COLUMN districts_id varchar(6) CHARACTER SET utf8 COLLATE utf8_general_ci NULL; 
+ALTER TABLE tbsick_bed ADD FOREIGN KEY (districts_id) REFERENCES districts(districts_id) ON UPDATE CASCADE;
+
+ALTER TABLE tbsick_bed ADD FOREIGN KEY (province_id) REFERENCES provinces(province_id) ON UPDATE CASCADE;
+ALTER TABLE tbsick_bed ADD FOREIGN KEY (amphure_id) REFERENCES amphures(amphure_id) ON UPDATE CASCADE;
+
