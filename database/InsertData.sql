@@ -5,7 +5,7 @@ INSERT INTO `geographies` (`geo_id`, `name`) VALUES
 (4, 'ภาคตะวันตก'),
 (5, 'ภาคตะวันออก'),
 (6, 'ภาคใต้');
-
+INSERT INTO tbgive_status(give_name,give_note) VALUES('ยังไม่ได้รับเตียง','-'),('ได้รับเตียงแล้ว','-');
 /*--------------Insert Provinces---------------*/
 INSERT INTO `provinces` (`province_id`, `code`, `name_th`, `name_en`, `geo_id`) VALUES
 (1, '10', 'กรุงเทพมหานคร', 'Bangkok', 2),
