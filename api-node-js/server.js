@@ -55,7 +55,7 @@ dbCon.connect();
 app.get('/all-sickbed', (req, res) => {
     const myBackslash = `\\`;
     dbCon.query(
-        "SELECT a.sit_id as sit_id ,CONCAT(a.sick_name,' จำนวน ',a.sick_amount,' ตัว') as data_sickbed,CONCAT('หมายเหตุ ',a.sick_note) as sick_note,CONCAT(a.date_add) as date_add,b.sit_name,CONCAT(d.pre_th_name,c.user_firstname,' ',c.user_lastname) as users, CONCAT('ติดต่อ : ',' ',c.user_phone) as user_phone ,CONCAT('ตำแหน่งที่ตั้ง ','เลขที่ ',a.village,' จังหวัด ',e.name_th,' อำเภอ ',r.name_th,' ตำบล ',y.name_th) as address FROM tbsick_bed as a INNER JOIN tbsick_status as b ON a.sit_id = b.sit_id INNER JOIN tbusers as c ON c.user_username = a.user_username INNER JOIN provinces as e ON e.province_id = a.province_id INNER JOIN amphures as r ON r.amphure_id = a.amphure_id INNER JOIN districts as y ON y.districts_id = a.districts_id INNER JOIN tbprefix as d ON d.prefix_id = c.prefix_id ORDER BY b.sit_name ASC;", (error, results, fields) => {
+        "SELECT a.sit_id as sit_id ,CONCAT(a.sick_name,' จำนวน ',a.sick_amount,' ตัว') as data_sickbed,CONCAT('หมายเหตุ ',a.sick_note) as sick_note,CONCAT(a.date_add) as date_add,b.sit_name,CONCAT(d.pre_th_name,c.user_firstname,' ',c.user_lastname) as users,c.user_email as user_email, CONCAT('',' ',c.user_phone) as user_phone ,CONCAT('ตำแหน่งที่ตั้ง ','เลขที่ ',a.village,' จังหวัด ',e.name_th,' อำเภอ ',r.name_th,' ตำบล ',y.name_th) as address FROM tbsick_bed as a INNER JOIN tbsick_status as b ON a.sit_id = b.sit_id INNER JOIN tbusers as c ON c.user_username = a.user_username INNER JOIN provinces as e ON e.province_id = a.province_id INNER JOIN amphures as r ON r.amphure_id = a.amphure_id INNER JOIN districts as y ON y.districts_id = a.districts_id INNER JOIN tbprefix as d ON d.prefix_id = c.prefix_id ORDER BY b.sit_name ASC;", (error, results, fields) => {
         if (error) throw error;
 
         let message = ""
@@ -307,6 +307,27 @@ app.get('/FetchDataUserOne/:user_username', (req, res) => {
         })
     }
 })
+app.get('/SickbedOne/:user_username', (req, res) => {
+    let user_username = req.params.user_username;
+
+    if (!user_username) {
+        return res.status(400).send({ error: true, message: "Please provide book id"});
+    } else {
+        dbCon.query("SELECT * FROM tbsick_bed WHERE user_username = ?", user_username, (error, results, fields) => {
+            if (error) throw error;
+
+            let message = "";
+            if (results === undefined || results.length == 0) {
+                message = "Data is empty";
+            } else {
+                message = "Successfully";
+            }
+
+            return res.send({data: results, message: message })
+        })
+    }
+})
+
 app.get('/test/:province_id', (req, res) => {
     let province_id = req.params.province_id;
 
