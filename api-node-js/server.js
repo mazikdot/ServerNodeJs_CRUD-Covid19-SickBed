@@ -70,7 +70,7 @@ app.get('/all-sickbed', (req, res) => {
 app.get('/all-sickwant', (req, res) => {
     const myBackslash = `\\`;
     dbCon.query(
-        "SELECT CONCAT(a.sickw_name,' จำนวน ',a.sickw_amount,' ตัว',' หมายเหตุ : ',a.sickw_note) as datawant, b.give_name as give_name , a.datebetween as datebetween, CONCAT('เลขที่ ',a.village ,' จังหวัด ',e.name_th , ' อำเภอ ',r.name_th,' ตำบล ',t.name_th) as map ,a.give_id as give_id ,CONCAT(g.pre_th_name,f.user_firstname ,+' ',f.user_lastname,' เบอร์โทรศัพท์ ' , f.user_phone,' อีเมลติดต่อ : ',f.user_email) as name FROM tbsick_want as a INNER JOIN tbgive_status as b ON b.give_id = a.give_id INNER JOIN provinces as e ON e.province_id = a.province_id INNER JOIN amphures as r ON r.amphure_id = a.amphure_id INNER JOIN districts as t ON t.districts_id = a.districts_id INNER JOIN tbusers as f ON f.user_username = a.user_username INNER JOIN tbprefix as g ON g.prefix_id = f.prefix_id;", (error, results, fields) => {
+        "SELECT a.give_id as give_id,a.sickw_name as sickw_name , a.sickw_amount as sickw_amount , a.sickw_note as sickw_note ,a.datebetween as datebetween ,b.give_name as give_name, CONCAT(r.pre_th_name,e.user_firstname,' ',e.user_lastname) as name , e.user_email as user_email, e.user_phone as user_phone ,z.name_th as province ,q.name_th as districts , v.name_th as amphures FROM tbsick_want as a INNER JOIN tbgive_status as b ON b.give_id = a.give_id INNER JOIN tbusers as e ON e.user_username = a.user_username INNER JOIN tbprefix as r ON r.prefix_id = e.prefix_id INNER JOIN provinces as z ON z.province_id = e.province_id INNER JOIN districts as q ON q.districts_id = e.districts_id INNER JOIN amphures as v ON v.amphure_id = e.amphure_id;", (error, results, fields) => {
         if (error) throw error;
 
         let message = ""
@@ -268,13 +268,12 @@ app.post('/insert-sickbed-want', (req, res) => {
    // console.log(session);
     // let hash_password = has(req.body.user_passwords);
     // validation
-    if(user_username === '' || sickw_name === '' || sickw_amount === '' || sickw_note === '' || give_id === '' || districts_id === ''
-  || province_id === '' || amphure_id === ''  || village ===''
+    if(user_username === '' || sickw_name === '' || sickw_amount === '' || sickw_note === '' || give_id === ''  || datebetween === ''
     ){
         return res.send({ error: true, status : false});
     }
     else {
-            dbCon.query('INSERT INTO tbsick_want(sickw_name,sickw_amount,sickw_note,give_id,user_username,districts_id,province_id,amphure_id,village,datebetween)  VALUES(?,?,?,1,?,?,?,?,?,?)', [sickw_name,sickw_amount,sickw_note,user_username,districts_id,province_id,amphure_id,village,datebetween], (error, results, fields) => {
+            dbCon.query('INSERT INTO tbsick_want(sickw_name,sickw_amount,sickw_note,give_id,user_username,datebetween)  VALUES(?,?,?,1,?,?)', [sickw_name,sickw_amount,sickw_note,user_username,datebetween], (error, results, fields) => {
                 if (error) { 
                     throw error;
                     return res.send({ error: true, data: results, message: "โปรดลองอีกครั้ง"})
@@ -313,7 +312,7 @@ app.get('/SickbedOne/:user_username', (req, res) => {
     if (!user_username) {
         return res.status(400).send({ error: true, message: "Please provide book id"});
     } else {
-        dbCon.query("SELECT * FROM tbsick_bed WHERE user_username = ?", user_username, (error, results, fields) => {
+        dbCon.query("SELECT a.sick_id as sick_id,a.sit_id as sit_id, a.sick_name as sick_name,a.sick_amount as sick_amount,a.sick_note as sick_note,b.sit_name as give_name FROM tbsick_bed as a INNER JOIN tbsick_status as b ON a.sit_id = b.sit_id WHERE a.user_username = ?;", user_username, (error, results, fields) => {
             if (error) throw error;
 
             let message = "";
@@ -328,13 +327,13 @@ app.get('/SickbedOne/:user_username', (req, res) => {
     }
 })
 
-app.get('/test/:province_id', (req, res) => {
-    let province_id = req.params.province_id;
+app.get('/SickOne/:sick_id', (req, res) => {
+    let sick_id = req.params.sick_id;
 
-    if (!province_id) {
+    if (!sick_id) {
         return res.status(400).send({ error: true, message: "Please provide book id"});
     } else {
-        dbCon.query("SELECT amphure_id,name_th FROM amphures WHERE province_id = ?", province_id, (error, results, fields) => {
+        dbCon.query("SELECT * FROM tbsick_bed WHERE sick_id = ?", sick_id, (error, results, fields) => {
             if (error) throw error;
 
             let message = "";
@@ -344,31 +343,12 @@ app.get('/test/:province_id', (req, res) => {
                 message = "Successfully";
             }
 
-            return res.send({data: results, message: message })
+            return res.send({data: results[0], message: message })
         })
     }
 })
 
-app.get('/ReadAmphuresEdit', (req, res) => {
-    let province_id = req.body.province_id;
 
-    if (!province_id) {
-        return res.status(400).send({ error: true, message: "Plese input id"});
-    } else {
-        dbCon.query("SELECT amphure_id,name_th FROM amphures WHERE province_id = ?", [province_id], (error, results, fields) => {
-            if (error) throw error;
-
-            let message = "";
-            if (results === undefined || results.length == 0) {
-                message = "Data not found";
-            } else {
-                message = "Successfully";
-            }
-
-            return res.send({ error: false, data: results, message: message })
-        })
-    }
-})
 app.post('/UpdateDataUser', (req, res) => {
     let user_username = req.body.user_username;
     // let user_password = req.body.user_password;
@@ -402,6 +382,180 @@ app.post('/UpdateDataUser', (req, res) => {
     }
 })
 
+app.post('/Usickbed', (req, res) => {
+    let sick_name = req.body.sick_name;
+    // let user_password = req.body.user_password;
+    let sick_amount = req.body.sick_amount;
+    let sick_note = req.body.sick_note;
+    let sit_id = req.body.sit_id;
+    let sick_id = req.body.sick_id;
+
+
+
+    // validation
+    if (!sick_name || !sick_amount || !sick_note || !sit_id) {
+        return res.status(400).send({ message: 'Please Enter Data',status : false});
+    } else {
+        dbCon.query('UPDATE tbsick_bed SET  sick_name = ? , sick_amount = ? , sick_note = ?  , sit_id = ? WHERE sick_id = ?', [sick_name,sick_amount,sick_note,sit_id,sick_id], (error, results, fields) => {
+            // UPDATE books SET name = ?, author = ? WHERE id = ?', [name, author, id], (error, results, fields)
+            if (error) throw error;
+
+            let message = "";
+            if (results.changedRows === 0) {
+                message = "No Data";
+            } else {
+                message = "Update Successfully";
+            }
+
+            return res.send({ error: false, data: results, message: message })
+        })
+    }
+})
+
+app.get('/fetchSickStatus', (req, res) => {
+    dbCon.query(
+        "SELECT * FROM tbsick_status", (error, results, fields) => {
+        if (error) throw error;
+
+        let message = ""
+        if (results === undefined || results.length == 0) {
+            message = "Data is empty";
+        } else {
+            message = "Successfully";
+        }
+        return res.send({ error: false, data: results, message: message});
+    })
+})
+
+app.post('/deleteSickbed', (req, res) => {
+    let sick_id = req.body.sick_id;
+
+    if (!sick_id) {
+        return res.status(400).send({ error: true, message: "Enter Your Sick ID"});
+    } else {
+        dbCon.query('DELETE FROM tbsick_bed WHERE sick_id = ?', [sick_id], (error, results, fields) => {
+            if (error) throw error;
+            let message = "";
+            if (results.affectedRows === 0) {
+                message = "No data";
+            } else {
+                message = "Successfully deleted";
+            }
+            return res.send({ error: false, data: results, message: message })
+        })
+    }
+})
+
+
+app.get('/SickWantOne/:user_username', (req, res) => {
+    let user_username = req.params.user_username;
+
+    if (!user_username) {
+        return res.status(400).send({ error: true, message: "Please provide book id"});
+    } else {
+        dbCon.query("SELECT a.sickw_id as sickw_id, a.give_id as give_id , a.sickw_name as sickw_name , a.sickw_amount  as sickw_amount,a.sickw_note as sickw_note , a.datebetween as datebetween , b.give_name as give_name FROM tbsick_want as a INNER JOIN tbgive_status as b ON b.give_id = a.give_id WHERE a.user_username = ?;", user_username, (error, results, fields) => {
+            if (error) throw error;
+
+            let message = "";
+            if (results === undefined || results.length == 0) {
+                message = "Data is empty";
+            } else {
+                message = "Successfully";
+            }
+
+            return res.send({data: results, message: message })
+        })
+    }
+})
+
+
+app.get('/SickWantOneEdit/:sickw_id', (req, res) => {
+    let sickw_id = req.params.sickw_id;
+
+    if (!sickw_id) {
+        return res.status(400).send({ error: true, message: "Please provide book id"});
+    } else {
+        dbCon.query("SELECT * FROM tbsick_want WHERE sickw_id = ?", sickw_id, (error, results, fields) => {
+            if (error) throw error;
+
+            let message = "";
+            if (results === undefined || results.length == 0) {
+                message = "Data is empty";
+            } else {
+                message = "Successfully";
+            }
+
+            return res.send({data: results[0], message: message })
+        })
+    }
+})
+
+app.get('/fetchStatusGive', (req, res) => {
+    dbCon.query(
+        "SELECT * FROM tbgive_status", (error, results, fields) => {
+        if (error) throw error;
+
+        let message = ""
+        if (results === undefined || results.length == 0) {
+            message = "Data is empty";
+        } else {
+            message = "Successfully";
+        }
+        return res.send({ error: false, data: results, message: message});
+    })
+})
+
+
+app.post('/UpdateSickWant', (req, res) => {
+    let sickw_name = req.body.sickw_name;
+    // let user_password = req.body.user_password;
+    let sickw_amount = req.body.sickw_amount;
+    let sickw_note = req.body.sickw_note;
+    let sickw_id = req.body.sickw_id;
+    let give_id = req.body.give_id;
+    let datebetween = req.body.datebetween;
+
+
+
+    // validation
+    if (!sickw_name || !sickw_amount || !sickw_note || !sickw_id || !give_id || !datebetween) {
+        return res.status(400).send({ message: 'Please Enter Data',status : false});
+    } else {
+        dbCon.query('UPDATE tbsick_want SET  sickw_name = ? , sickw_amount = ? , sickw_note = ?  , give_id = ? , datebetween = ? WHERE sickw_id = ?', [sickw_name,sickw_amount,sickw_note,give_id,datebetween,sickw_id], (error, results, fields) => {
+            // UPDATE books SET name = ?, author = ? WHERE id = ?', [name, author, id], (error, results, fields)
+            if (error) throw error;
+
+            let message = "";
+            if (results.changedRows === 0) {
+                message = "No Data";
+            } else {
+                message = "Update Successfully";
+            }
+
+            return res.send({ error: false, data: results, message: message })
+        })
+    }
+})
+
+
+app.post('/deleteSickWant', (req, res) => {
+    let sickw_id = req.body.sickw_id;
+
+    if (!sickw_id) {
+        return res.status(400).send({ error: true, message: "Enter Your Sick ID"});
+    } else {
+        dbCon.query('DELETE FROM tbsick_want WHERE sickw_id = ?', [sickw_id], (error, results, fields) => {
+            if (error) throw error;
+            let message = "";
+            if (results.affectedRows === 0) {
+                message = "No data";
+            } else {
+                message = "Successfully deleted";
+            }
+            return res.send({ error: false, data: results, message: message })
+        })
+    }
+})
 // 
 // --------------------Test CRUD Vue Component SPA-----------------------
 // app.get('/SelectSpa', (req, res) => {
