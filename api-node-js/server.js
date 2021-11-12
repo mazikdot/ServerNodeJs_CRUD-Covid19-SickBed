@@ -55,7 +55,7 @@ dbCon.connect();
 app.get('/all-sickbed', (req, res) => {
     const myBackslash = `\\`;
     dbCon.query(
-        "SELECT a.sit_id as sit_id ,CONCAT(a.sick_name,' จำนวน ',a.sick_amount,' ตัว') as data_sickbed,CONCAT('หมายเหตุ ',a.sick_note) as sick_note,CONCAT(a.date_add) as date_add,b.sit_name,CONCAT(d.pre_th_name,c.user_firstname,' ',c.user_lastname) as users,c.user_email as user_email, CONCAT('',' ',c.user_phone) as user_phone ,CONCAT('ตำแหน่งที่ตั้ง ','เลขที่ ',a.village,' จังหวัด ',e.name_th,' อำเภอ ',r.name_th,' ตำบล ',y.name_th) as address FROM tbsick_bed as a INNER JOIN tbsick_status as b ON a.sit_id = b.sit_id INNER JOIN tbusers as c ON c.user_username = a.user_username INNER JOIN provinces as e ON e.province_id = a.province_id INNER JOIN amphures as r ON r.amphure_id = a.amphure_id INNER JOIN districts as y ON y.districts_id = a.districts_id INNER JOIN tbprefix as d ON d.prefix_id = c.prefix_id ORDER BY b.sit_name ASC;", (error, results, fields) => {
+        "SELECT a.sick_id as sick_id, a.sit_id as sit_id ,CONCAT(a.sick_name,' จำนวน ',a.sick_amount,' ตัว') as data_sickbed,CONCAT('หมายเหตุ ',a.sick_note) as sick_note,CONCAT(a.date_add) as date_add,b.sit_name,CONCAT(d.pre_th_name,c.user_firstname,' ',c.user_lastname) as users,c.user_email as user_email, CONCAT('',' ',c.user_phone) as user_phone ,CONCAT('ตำแหน่งที่ตั้ง ','เลขที่ ',a.village,' จังหวัด ',e.name_th,' อำเภอ ',r.name_th,' ตำบล ',y.name_th) as address FROM tbsick_bed as a INNER JOIN tbsick_status as b ON a.sit_id = b.sit_id INNER JOIN tbusers as c ON c.user_username = a.user_username INNER JOIN provinces as e ON e.province_id = a.province_id INNER JOIN amphures as r ON r.amphure_id = a.amphure_id INNER JOIN districts as y ON y.districts_id = a.districts_id INNER JOIN tbprefix as d ON d.prefix_id = c.prefix_id ORDER BY b.sit_name ASC;", (error, results, fields) => {
         if (error) throw error;
 
         let message = ""
@@ -70,7 +70,7 @@ app.get('/all-sickbed', (req, res) => {
 app.get('/all-sickwant', (req, res) => {
     const myBackslash = `\\`;
     dbCon.query(
-        "SELECT a.give_id as give_id,a.sickw_name as sickw_name , a.sickw_amount as sickw_amount , a.sickw_note as sickw_note ,a.datebetween as datebetween ,b.give_name as give_name, CONCAT(r.pre_th_name,e.user_firstname,' ',e.user_lastname) as name , e.user_email as user_email, e.user_phone as user_phone ,z.name_th as province ,q.name_th as districts , v.name_th as amphures FROM tbsick_want as a INNER JOIN tbgive_status as b ON b.give_id = a.give_id INNER JOIN tbusers as e ON e.user_username = a.user_username INNER JOIN tbprefix as r ON r.prefix_id = e.prefix_id INNER JOIN provinces as z ON z.province_id = e.province_id INNER JOIN districts as q ON q.districts_id = e.districts_id INNER JOIN amphures as v ON v.amphure_id = e.amphure_id;", (error, results, fields) => {
+        "SELECT a.sickw_id as sickw_id, a.give_id as give_id,a.sickw_name as sickw_name , a.sickw_amount as sickw_amount , a.sickw_note as sickw_note ,a.datebetween as datebetween ,b.give_name as give_name, CONCAT(r.pre_th_name,e.user_firstname,' ',e.user_lastname) as name , e.user_email as user_email, e.user_phone as user_phone ,z.name_th as province ,q.name_th as districts , v.name_th as amphures FROM tbsick_want as a INNER JOIN tbgive_status as b ON b.give_id = a.give_id INNER JOIN tbusers as e ON e.user_username = a.user_username INNER JOIN tbprefix as r ON r.prefix_id = e.prefix_id INNER JOIN provinces as z ON z.province_id = e.province_id INNER JOIN districts as q ON q.districts_id = e.districts_id INNER JOIN amphures as v ON v.amphure_id = e.amphure_id;", (error, results, fields) => {
         if (error) throw error;
 
         let message = ""
@@ -615,6 +615,66 @@ app.get('/Count_NoSickwant', (req, res) => {
         return res.send({ error: false, data: results, message: message});
     })
 })
+
+
+app.post('/deleteAllSickbed', (req, res) => {
+        dbCon.query('DELETE FROM tbsick_bed',  (error, results, fields) => {
+            if (error) throw error;
+            let message = "";
+            if (results.affectedRows === 0) {
+                message = "No data";
+            } else {
+                message = "Successfully deleted";
+            }
+            return res.send({ error: false, data: results, message: message })
+        })
+})
+app.post('/deleteAllSickbedWant', (req, res) => {
+        dbCon.query('DELETE FROM tbsick_want',  (error, results, fields) => {
+            if (error) throw error;
+            let message = "";
+            if (results.affectedRows === 0) {
+                message = "No data";
+            } else {
+                message = "Successfully deleted";
+            }
+            return res.send({ error: false, data: results, message: message })
+        })
+})
+
+app.get('/getUser', (req, res) => {
+    dbCon.query(
+        "SELECT  * FROM tbusers", (error, results, fields) => {
+        if (error) throw error;
+
+        let message = ""
+        if (results === undefined || results.length == 0) {
+            message = "Data is empty";
+        } else {
+            message = "Successfully";
+        }
+        return res.send({ error: false, data: results, message: message});
+    })
+})
+app.post('/deleteUser', (req, res) => {
+    let user_username = req.body.user_username;
+
+    if (!user_username) {
+        return res.status(400).send({ error: true, message: "Enter Your Sick ID"});
+    } else {
+        dbCon.query('DELETE FROM tbusers WHERE user_username = ?', [user_username], (error, results, fields) => {
+            if (error) throw error;
+            let message = "";
+            if (results.affectedRows === 0) {
+                message = "No data";
+            } else {
+                message = "Successfully deleted";
+            }
+            return res.send({ error: false, data: results, message: message })
+        })
+    }
+})
+
 // 
 // --------------------Test CRUD Vue Component SPA-----------------------
 // app.get('/SelectSpa', (req, res) => {
