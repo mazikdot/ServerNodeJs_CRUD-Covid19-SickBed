@@ -556,6 +556,65 @@ app.post('/deleteSickWant', (req, res) => {
         })
     }
 })
+
+app.get('/Count_freebed', (req, res) => {
+    dbCon.query(
+        "SELECT COUNT(sit_id) as count_freebed FROM tbsick_bed WHERE sit_id = 2;", (error, results, fields) => {
+        if (error) throw error;
+
+        let message = ""
+        if (results === undefined || results.length == 0) {
+            message = "Data is empty";
+        } else {
+            message = "Successfully";
+        }
+        return res.send({ error: false, data: results, message: message});
+    })
+})
+
+app.get('/Count_Nofreebed', (req, res) => {
+    dbCon.query(
+        "SELECT COUNT(sit_id) as count_nofreebed FROM tbsick_bed WHERE sit_id = 1;", (error, results, fields) => {
+        if (error) throw error;
+
+        let message = ""
+        if (results === undefined || results.length == 0) {
+            message = "Data is empty";
+        } else {
+            message = "Successfully";
+        }
+        return res.send({ error: false, data: results, message: message});
+    })
+})
+
+app.get('/Count_Sickwant', (req, res) => {
+    dbCon.query(
+        "SELECT COUNT(give_id) as sickbed_want FROM tbsick_want WHERE give_id = 2;", (error, results, fields) => {
+        if (error) throw error;
+
+        let message = ""
+        if (results === undefined || results.length == 0) {
+            message = "Data is empty";
+        } else {
+            message = "Successfully";
+        }
+        return res.send({ error: false, data: results, message: message});
+    })
+})
+app.get('/Count_NoSickwant', (req, res) => {
+    dbCon.query(
+        "SELECT COUNT(give_id) as Nosickbed_want FROM tbsick_want WHERE give_id = 1;", (error, results, fields) => {
+        if (error) throw error;
+
+        let message = ""
+        if (results === undefined || results.length == 0) {
+            message = "Data is empty";
+        } else {
+            message = "Successfully";
+        }
+        return res.send({ error: false, data: results, message: message});
+    })
+})
 // 
 // --------------------Test CRUD Vue Component SPA-----------------------
 // app.get('/SelectSpa', (req, res) => {
